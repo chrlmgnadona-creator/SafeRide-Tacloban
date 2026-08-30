@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SafeRide - Developers Server</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header class="navbar">
+        <div class="nav-brand">
+            <h2>🛡️ SafeRide Developers Server</h2>
+        </div>
+        <div class="server-status">
+            <span class="status-dot"></span> Server Online (Listening for Reports)
+        </div>
+    </header>
+
+    <main class="main-container">
+        
+        <section class="metrics-grid">
+            <div class="metric-card">
+                <h3>Total Reports Received</h3>
+                <p id="totalCount" class="metric-value">0</p>
+            </div>
+            <div class="metric-card">
+                <h3>Pending Review</h3>
+                <p id="pendingCount" class="metric-value">0</p>
+            </div>
+            <div class="metric-card">
+                <h3>Resolved Issues</h3>
+                <p id="resolvedCount" class="metric-value">0</p>
+            </div>
+        </section>
+
+        <section class="card">
+            <div class="section-header">
+                <h2>Incoming Network Reports Feed</h2>
+                <button class="btn-primary" onclick="syncReports()">🔄 Refresh Sync</button>
+            </div>
+
+            <div class="admin-table-container">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Category</th>
+                            <th>Location</th>
+                            <th>Author Email</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="serverTableBody">
+                        </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <div id="toast-container" class="toast-container"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
