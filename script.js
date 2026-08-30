@@ -25,8 +25,15 @@ let appState = {
 
 let leafletMap = null;
 
-// Initialize App View & Mapping
+// Initialize App View & Mapping (Loads shared data if available)
 document.addEventListener("DOMContentLoaded", () => {
+    const savedReports = localStorage.getItem('saferide_shared_reports');
+    if (savedReports) {
+        appState.reports = JSON.parse(savedReports);
+    } else {
+        localStorage.setItem('saferide_shared_reports', JSON.stringify(appState.reports));
+    }
+
     switchView('home');
     renderCommunityReports();
 });
@@ -161,7 +168,7 @@ function updateNavbarAuth() {
     }
 }
 
-// Reporting Logic
+// Reporting Logic (Synced to Developer Server)
 function handleReportSubmit(e) {
     e.preventDefault();
     const category = document.getElementById('repCategory').value;
@@ -169,7 +176,7 @@ function handleReportSubmit(e) {
     const description = document.getElementById('repDesc').value;
 
     const newReport = {
-        id: appState.reports.length + 1,
+        id: appState.reports.length > 0 ? Math.max(...appState.reports.map(r => r.id)) + 1 : 1,
         category,
         location,
         description,
@@ -179,7 +186,11 @@ function handleReportSubmit(e) {
     };
 
     appState.reports.unshift(newReport);
-    showToast("Report submitted successfully to SafeRide-Tacloban network!");
+
+    // Save to shared localStorage so the Developers Server can read it
+    localStorage.setItem('saferide_shared_reports', JSON.stringify(appState.reports));
+
+    showToast("Report submitted successfully and forwarded to the server network!");
     document.getElementById('reportForm').reset();
     switchView('community');
     renderCommunityReports();
@@ -187,6 +198,12 @@ function handleReportSubmit(e) {
 
 // Render Community Reports Feed & Map Markers
 function renderCommunityReports(filteredList = null) {
+    // Sync with storage before rendering
+    const savedReports = localStorage.getItem('saferide_shared_reports');
+    if (savedReports) {
+        appState.reports = JSON.parse(savedReports);
+    }
+
     const container = document.getElementById('communityReportsList');
     const listToRender = filteredList || appState.reports;
 
@@ -243,6 +260,11 @@ function initMap() {
 
 // User Dashboard View Rendering
 function renderUserDashboard() {
+    const savedReports = localStorage.getItem('saferide_shared_reports');
+    if (savedReports) {
+        appState.reports = JSON.parse(savedReports);
+    }
+
     document.getElementById('profileName').textContent = appState.currentUser.name;
     document.getElementById('profileEmail').textContent = appState.currentUser.email;
 
@@ -270,6 +292,7 @@ function renderUserDashboard() {
 function deleteMyReport(id) {
     if (confirm("Are you sure you want to remove your report?")) {
         appState.reports = appState.reports.filter(r => r.id !== id);
+        localStorage.setItem('saferide_shared_reports', JSON.stringify(appState.reports));
         renderUserDashboard();
         renderCommunityReports();
     }
@@ -277,6 +300,11 @@ function deleteMyReport(id) {
 
 // Admin Portal View Rendering
 function renderAdminTable() {
+    const savedReports = localStorage.getItem('saferide_shared_reports');
+    if (savedReports) {
+        appState.reports = JSON.parse(savedReports);
+    }
+
     const tbody = document.getElementById('adminTableBody');
     
     tbody.innerHTML = appState.reports.map(r => `
@@ -304,6 +332,7 @@ function adminUpdateStatus(id, newStatus) {
     const report = appState.reports.find(r => r.id === id);
     if (report) {
         report.status = newStatus;
+        localStorage.setItem('saferide_shared_reports', JSON.stringify(appState.reports));
         renderAdminTable();
         renderCommunityReports();
     }
@@ -312,6 +341,7 @@ function adminUpdateStatus(id, newStatus) {
 function adminDeleteReport(id) {
     if (confirm("Admin action: Remove false or inappropriate report?")) {
         appState.reports = appState.reports.filter(r => r.id !== id);
+        localStorage.setItem('saferide_shared_reports', JSON.stringify(appState.reports));
         renderAdminTable();
         renderCommunityReports();
     }
