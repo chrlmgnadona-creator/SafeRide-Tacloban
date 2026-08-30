@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SafeRide-Tacloban | Developer Monitor</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f7f6; margin: 0; padding: 20px; }
+        .container { max-width: 1000px; margin: auto; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; font-size: 24px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .card { background: #eef2f3; padding: 15px; border-radius: 6px; text-align: center; }
+        .card h3 { margin: 0 0 10px 0; font-size: 14px; color: #555; }
+        .card p { margin: 0; font-size: 22px; font-weight: bold; color: #2c3e50; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; font-size: 14px; }
+        th { background-color: #f8f9fa; color: #333; }
+        .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+        .status-Pending { background: #ffeeba; color: #856404; }
+        .status-Resolved { background: #d4edda; color: #155724; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Developer Monitor Dashboard</h1>
+        
+        <div class="metrics-grid">
+            <div class="card">
+                <h3>System Status</h3>
+                <p id="server-status" style="color: green;">Online</p>
+            </div>
+            <div class="card">
+                <h3>Total Reports</h3>
+                <p id="total-reports">0</p>
+            </div>
+            <div class="card">
+                <h3>Database Type</h3>
+                <p>SQLite</p>
+            </div>
+        </div>
+
+        <h2>Live Database Reports</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Category</th>
+                    <th>Location</th>
+                    <th>Status</th>
+                    <th>Timestamp</th>
+                </tr>
+            كنولوج
+            <tbody id="reports-table-body">
+                <tr><td colspan="5" style="text-align: center;">Loading system data...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        async function fetchSystemMonitorData() {
+            try {
+                const response = await fetch('/api/reports');
+                const reports = await response.json();
+                
+                document.getElementById('total-reports').textContent = reports.length;
+                
+                const tbody = document.getElementById('reports-table-body');
+                tbody.innerHTML = '';
+                
+                if (reports.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No records found in database.</td></tr>';
+                    return;
+                }
+
+                reports.forEach(r => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>#${r.id}</td>
+                        <td>${r.category}</td>
+                        <td>${r.location}</td>
+                        <td><span class="status-badge status-${r.status}">${r.status}</span></td>
+                        <td>${r.created_at}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (err) {
+                document.getElementById('server-status').textContent = 'Disconnected';
+                document.getElementById('server-status').style.color = 'red';
+                console.error('Failed to load monitor data:', err);
+            }
+        }
+
+        fetchSystemMonitorData();
+        setInterval(fetchSystemMonitorData, 5000); // Auto-refresh every 5 seconds
+    </script>
+</body>
+</html>
