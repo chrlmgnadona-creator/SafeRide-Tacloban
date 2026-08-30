@@ -31,6 +31,36 @@ document.addEventListener("DOMContentLoaded", () => {
     renderCommunityReports();
 });
 
+// Custom Toast Notification System
+function showToast(message) {
+    let container = document.getElementById('toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        container.style.cssText = 'position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px;';
+        document.body.appendChild(container);
+    }
+
+    const toast = document.createElement('div');
+    toast.style.cssText = 'background-color: #333; color: #fff; padding: 12px 20px; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); font-family: sans-serif; font-size: 14px; opacity: 0; transform: translateY(20px); transition: opacity 0.3s ease, transform 0.3s ease;';
+    toast.textContent = message;
+
+    container.appendChild(toast);
+
+    setTimeout(() => {
+        toast.style.opacity = '1';
+        toast.style.transform = 'translateY(0)';
+    }, 10);
+
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            container.removeChild(toast);
+        }, 300);
+    }, 3000);
+}
+
 // View Navigation Router
 function switchView(viewName) {
     document.querySelectorAll('.view-section').forEach(sec => sec.style.display = 'none');
@@ -43,7 +73,7 @@ function switchView(viewName) {
         initMap();
     } else if (viewName === 'submit') {
         if (!appState.currentUser) {
-            alert("Please login first to submit a report.");
+            showToast("Please login first to submit a report.");
             openModal('loginModal');
             return;
         }
@@ -57,7 +87,7 @@ function switchView(viewName) {
         renderUserDashboard();
     } else if (viewName === 'admin') {
         if (!appState.currentUser || appState.currentUser.role !== 'admin') {
-            alert("Access restricted to Administrators.");
+            showToast("Access restricted to Administrators.");
             return;
         }
         document.getElementById('view-admin').style.display = 'block';
@@ -78,7 +108,6 @@ function handleLogin(e) {
     e.preventDefault();
     const email = document.getElementById('loginEmail').value;
     
-    // Hardcoded Admin check or Regular User
     if (email === 'admin@saferide.ph') {
         appState.currentUser = { name: 'System Administrator', email: email, role: 'admin' };
     } else {
@@ -150,7 +179,7 @@ function handleReportSubmit(e) {
     };
 
     appState.reports.unshift(newReport);
-    alert("Report submitted successfully to SafeRide-Tacloban network!");
+    showToast("Report submitted successfully to SafeRide-Tacloban network!");
     document.getElementById('reportForm').reset();
     switchView('community');
     renderCommunityReports();
@@ -200,14 +229,12 @@ function initMap() {
         leafletMap.invalidateSize();
         return;
     }
-    // Tacloban City Coordinates
     leafletMap = L.map('taclobanMap').setView([11.2434, 125.0046], 14);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors'
     }).addTo(leafletMap);
 
-    // Sample pinned locations in Tacloban
     L.marker([11.2434, 125.0046]).addTo(leafletMap)
         .bindPopup("<b>Tacloban City Hall Area</b><br/>General Transit Hub.");
     L.marker([11.2500, 125.0100]).addTo(leafletMap)
